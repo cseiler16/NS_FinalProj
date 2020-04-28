@@ -157,8 +157,8 @@ stopTime = 10;
 %  'ShortAddress', '0002', 'ExtendedAddress', [repmat('0', 1, 8) repmat('4', 1, 8)], 'Verbosity', false);
 % Suppress detailed output:
 
-endDevice1.Verbosity = false;
-panCoordinator.Verbosity = false;
+%endDevice1.Verbosity = false;
+%panCoordinator.Verbosity = false;
 
 %%
 % More nodes can be added to the network, as long as the channel
