@@ -140,6 +140,7 @@ while time < stopTime
 
   time = time + symbolsPerStep/symbolRate; % update clock
 end
+stopTime = 10;
 
 %% 
 % Once the 1st end device has been associated, data frames are randomly
@@ -152,30 +153,12 @@ end
 % In this case, the output is suppressed.
 
 % Create second end-device:
-endDevice2 = lrwpan.MACReducedFunctionDevice('SamplesPerChip', 4, ...
-  'ShortAddress', '0002', 'ExtendedAddress', [repmat('0', 1, 8) repmat('4', 1, 8)], 'Verbosity', false);
+%endDevice2 = lrwpan.MACReducedFunctionDevice('SamplesPerChip', 4, ...
+%  'ShortAddress', '0002', 'ExtendedAddress', [repmat('0', 1, 8) repmat('4', 1, 8)], 'Verbosity', false);
 % Suppress detailed output:
+
 endDevice1.Verbosity = false;
 panCoordinator.Verbosity = false;
-
-% Initialize input
-received3 = zeros(samplesPerChip * chipsPerSymbol * symbolsPerStep/2, 1);
-
-stopTime = 10; % sec
-while time < stopTime
-  % Pass the received signals to the nodes for processing. Also, fetch what
-  % they have to transmit:
-  transmitted1 = panCoordinator(received1);
-  transmitted2 = endDevice1(received2);
-  transmitted3 = endDevice2(received3);
-  
-  % Ideal wireless channel, where all nodes are within range:
-  received1 = transmitted2 + transmitted3; % half-duplex radios, none receiving while transmitting
-  received2 = transmitted1 + transmitted3;
-  received3 = transmitted1 + transmitted2;
-
-  time = time + symbolsPerStep/symbolRate; % update clock
-end
 
 %%
 % More nodes can be added to the network, as long as the channel
