@@ -1,0 +1,7 @@
+function result_array = corrupt(x)
+BER = 0.01;
+len = length(x);
+i = randperm(len);
+for 
+
+end
