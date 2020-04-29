@@ -32,9 +32,9 @@ packets_sec = symbol_rate/symbols_total; %packets per second
 packets_sec_noack = symbol_rate/symbols_total_noack;
 packets_sec_resend = symbol_rate/symbols_resend;
 
-throughput_kbps = app_payload * 8 * packets_sec; %App payload * 8 bits/byte * packets_second;
-throughput_kbps_noack = app_payload * 8 * packets_sec_noack;
-throughput_kbps_resend = app_payload*8*packets_sec_resend;
+throughput_kbps = (app_payload * 8 * packets_sec)/1000; %App payload * 8 bits/byte * packets_second;
+throughput_kbps_noack = (app_payload * 8 * packets_sec_noack)/1000;
+throughput_kbps_resend = (app_payload*8*packets_sec_resend)/1000;
 
 %maximum throughput for single hop transmission in a lightly loaded, non-beacon enabled PAN
 %is approximately 115.5kbps
@@ -57,13 +57,22 @@ packets_sec_lost = ceil((packets_sec*BER)); %Packets lost per second, rounded up
 %assumption that we resend packets
 throughput_BER_resend = (throughput_kbps*.99) - (throughput_kbps_resend*.01);
 
-throughputs = [throughput_kbps, throughput_kbps_noack, throughput_BER, throughput_BER_noack, throughput_BER_resend];
+throughputs = [throughput_kbps; throughput_kbps_noack; throughput_BER; throughput_BER_noack; throughput_BER_resend];
 figure(2)
 
 
-bar(throughputs);
+
+X=categorical({'Normal','No ack','w/ BER','w/ BER w/ No Ack','w/ BER w/ Resend'});
+hb = bar(X(1),throughputs(1));
+ylim([100 130]);
 ylabel('Throughput (Kbps)');
-xlabel('Options');
-options = {'Throughput','Throughput no ack','w/ BER','Throughput w/ BER w/ No Ack','Throughput w/ BER w/ Resend' };
-legend(options,'location','northeast');
+hold on;
+hbr = bar(X(2),throughputs(2),'r');
+hold on;
+hbr = bar(X(3),throughputs(3),'y');
+hold on;
+hbr = bar(X(4),throughputs(4),'g');
+hold on;
+hbr = bar(X(5),throughputs(5),'m');
+hold off;
 
