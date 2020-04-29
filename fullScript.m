@@ -44,6 +44,12 @@ plot(data(1).eegBF(1, :));
 % ALL CREDIT TO: http://research.ics.aalto.fi/ica/fastica/
 % FastICA library by Hugo Gävert, Jarmo Hurri, Jaakko Särelä, and Aapo
 % Hyvärinen under GPL license
+
+for i = 1:5
+    for j = 1:100
+        data(i).ica(j, :) = fastica(data(i).eegBF(j, :));
+    end
+end
 %% Perform Wavelet Transform on Filtered Data
 % Decompose into 5 EEG sub-bands using Discrete Wavelet Transform
 % 
