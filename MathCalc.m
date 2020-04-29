@@ -64,6 +64,7 @@ figure(2)
 
 X=categorical({'Normal','No ack','w/ BER','w/ BER w/ No Ack','w/ BER w/ Resend'});
 hb = bar(X(1),throughputs(1));
+title('Throughput for Different Error Options');
 ylim([100 130]);
 ylabel('Throughput (Kbps)');
 hold on;
