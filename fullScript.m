@@ -5,18 +5,24 @@
 % Data obtained from http://epileptologie-bonn.de/cms/front_content.php?idcat=193&lang=3
 
 data = importData('data');
-
+disp('Finished importing data');
+%%
 % plot mean original data for sets A-E
 figure
 plot(mean(data(1).eeg(:, :)));
+title('Mean of Set A EEG Time Series');
 figure
 plot(mean(data(2).eeg(:, :)));
+title('Mean of Set B EEG Time Series');
 figure
 plot(mean(data(3).eeg(:, :)));
+title('Mean of Set C EEG Time Series');
 figure
 plot(mean(data(4).eeg(:, :)));
+title('Mean of Set D EEG Time Series');
 figure
 plot(mean(data(5).eeg(:, :)));
+title('Mean of Set E EEG Time Series');
 %% Perform preliminary filtering steps
 % Apply lowpass filter with bandwidth of 40 Hz
 fpass = 40;
@@ -26,7 +32,7 @@ for i = 1:5
         data(i).eegBF(j, :) = lowpass(data(i).eeg(j,:), fpass, fs);
     end
 end
-
+%%
 %plot example signal before and after applying lowpass
 figure
 plot(data(1).eeg(1, :));
@@ -51,7 +57,7 @@ plot(data(1).eegBF(1, :));
 % Gamma wave = >35 Hz frequency
 for i = 1:5
     for j = 1:100
-        [C, L] = wavedec(mean(data(1).eegBF(:,:)), 5, 'db4');
+        [C, L] = wavedec((data(i).eegBF(j,:)), 5, 'db4');
         data(i).coeff(j).c1 = detcoef(C, L, 1);
         data(i).coeff(j).c2= detcoef(C, L, 2);
         data(i).coeff(j).c3 = detcoef(C, L, 3);
@@ -65,7 +71,7 @@ for i = 1:5
         data(i).appc(j).a5 = appcoef(C, L, 'db4', 5);
     end
 end
-
+%%
 %Plot all coefficients for one sample EEG time series
 subplot(5,2,1);
 plot(data(1).coeff(1).c1);
@@ -102,20 +108,81 @@ subplot(5,2,10);
 plot(data(1).appc(1).a5);
 title('Approximation Coefficient: Delta')
 %% Simulate Transmission of Data 
-% Use calculated bit error rate to corrupt the data 
+% Use calculated bit error rate to corrupt the data
+for i = 1:5
+    for j = 1:100
+        data(i).corruptEEG(j, :) = Corrupt(data(i).eegBF(j,:));
+    end
+end
+% Regenerate coefficients for transmitted data
+for i = 1:5
+    for j = 1:100
+        [C, L] = wavedec((data(1).corruptEEG(j,:)), 5, 'db4');
+        data(i).tcoeff(j).c1 = detcoef(C, L, 1);
+        data(i).tcoeff(j).c2= detcoef(C, L, 2);
+        data(i).tcoeff(j).c3 = detcoef(C, L, 3);
+        data(i).tcoeff(j).c4 = detcoef(C, L, 4);
+        data(i).tcoeff(j).c5 = detcoef(C, L, 5);
+
+        data(i).tappc(j).a1 = appcoef(C, L, 'db4', 1);
+        data(i).tappc(j).a2 = appcoef(C, L, 'db4', 2);
+        data(i).tappc(j).a3 = appcoef(C, L, 'db4', 3);
+        data(i).tappc(j).a4 = appcoef(C, L, 'db4', 4);
+        data(i).tappc(j).a5 = appcoef(C, L, 'db4', 5);
+    end
+end
 %% Calculate Root-Mean-Square Error Analysis 
 for i = 1:5
     for j = 1:100
-        data(i).rmse(j).c1 = rms(data(i).coeff(j).c1, data(i).tcoeff(j).c1);
-        data(i).rmse(j).c2 = rms(data(i).coeff(j).c2, data(i).tcoeff(j).c2);
-        data(i).rmse(j).c3 = rms(data(i).coeff(j).c3, data(i).tcoeff(j).c3);
-        data(i).rmse(j).c4 = rms(data(i).coeff(j).c4, data(i).tcoeff(j).c4);
-        data(i).rmse(j).c5 = rms(data(i).coeff(j).c5, data(i).tcoeff(j).c5);
+        data(i).rmse(j).c1 = rmse(data(i).coeff(j).c1, data(i).tcoeff(j).c1);
+        data(i).rmse(j).c2 = rmse(data(i).coeff(j).c2, data(i).tcoeff(j).c2);
+        data(i).rmse(j).c3 = rmse(data(i).coeff(j).c3, data(i).tcoeff(j).c3);
+        data(i).rmse(j).c4 = rmse(data(i).coeff(j).c4, data(i).tcoeff(j).c4);
+        data(i).rmse(j).c5 = rmse(data(i).coeff(j).c5, data(i).tcoeff(j).c5);
         
-        data(i).rmse(j).a1 = rms(data(i).appc(j).a1, data(i).tappc(j).a1);
-        data(i).rmse(j).a2 = rms(data(i).appc(j).a2, data(i).tappc(j).a2);
-        data(i).rmse(j).a3 = rms(data(i).appc(j).a3, data(i).tappc(j).a3);
-        data(i).rmse(j).a4 = rms(data(i).appc(j).a4, data(i).tappc(j).a4);
-        data(i).rmse(j).a5 = rms(data(i).appc(j).a5, data(i).tappc(j).a5);
+        data(i).rmse(j).a1 = rmse(data(i).appc(j).a1, data(i).tappc(j).a1);
+        data(i).rmse(j).a2 = rmse(data(i).appc(j).a2, data(i).tappc(j).a2);
+        data(i).rmse(j).a3 = rmse(data(i).appc(j).a3, data(i).tappc(j).a3);
+        data(i).rmse(j).a4 = rmse(data(i).appc(j).a4, data(i).tappc(j).a4);
+        data(i).rmse(j).a5 = rmse(data(i).appc(j).a5, data(i).tappc(j).a5);
     end
+end
+%%
+set = ['A', 'B', 'C', 'D', 'E'];
+for k = 1:length(set)
+figure
+meanToPlot(1) = mean([data(k).rmse(:).c1])/max([data(k).coeff(:).c1]);
+meanToPlot(2) = mean([data(k).rmse(:).c2])/max([data(k).coeff(:).c2]);
+meanToPlot(3) = mean([data(k).rmse(:).c3])/max([data(k).coeff(:).c3]);
+meanToPlot(4) = mean([data(k).rmse(:).c4])/max([data(k).coeff(:).c4]);
+meanToPlot(5) = mean([data(k).rmse(:).c5])/max([data(k).coeff(:).c5]);
+
+meanToPlot(6) = mean([data(k).rmse(:).a1])/max([data(k).appc(:).a1]);
+meanToPlot(7) = mean([data(k).rmse(:).a2])/max([data(k).appc(:).a2]);
+meanToPlot(8) = mean([data(k).rmse(:).a3])/max([data(k).appc(:).a3]);
+meanToPlot(9) = mean([data(k).rmse(:).a4])/max([data(k).appc(:).a4]);
+meanToPlot(10) = mean([data(k).rmse(:).a5])/max([data(k).appc(:).a5]);
+
+bar(meanToPlot); 
+title(['Normalized Mean RMSE of Set ', set(k), ' features']);
+xlabel('Coefficient (Detail Coeff 1-5, Approximation Coeff 1-5)');
+ylabel('RMSE score');
+
+% figure
+% maxToPlot(1) = max([data(k).coeff(:).c1]);
+% maxToPlot(2) = max([data(k).coeff(:).c2]);
+% maxToPlot(3) = max([data(k).coeff(:).c3]);
+% maxToPlot(4) = max([data(k).coeff(:).c4]);
+% maxToPlot(5) = max([data(k).coeff(:).c5]);
+% 
+% maxToPlot(6) = max([data(k).appc(:).a1]);
+% maxToPlot(7) = max([data(k).appc(:).a2]);
+% maxToPlot(8) = max([data(k).appc(:).a3]);
+% maxToPlot(9) = max([data(k).appc(:).a4]);
+% maxToPlot(10) = max([data(k).appc(:).a5]);
+% 
+% bar(maxToPlot); 
+% title(['Max coefficient values of Set ', set(k), ' features']);
+% xlabel('Coefficient (Detail Coeff 1-5, Approximation Coeff 1-5)');
+% ylabel('Coefficient score');
 end
